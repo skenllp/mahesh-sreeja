@@ -6,7 +6,7 @@ import { Sparkles, Heart, Calendar, Clock, Flower2, MapPin, Music, Gem, Star, Su
    ALL IMAGES that need to be loaded before reveal
 ═══════════════════════════════════════════════════ */
 const PRELOAD_IMAGES = [
-  "/gbmain.webp", "/groom.webp", "/bride.webp", "/bride2.webp",
+  "/gbmain.webp", "/mobile.webp", "/groom.webp", "/bride.webp", "/bride2.webp",
   "/ringexchange.webp", "/gb.webp", "/gb2.webp",
 ];
 
@@ -670,10 +670,15 @@ export default function Home() {
         {/* ═══════════ HERO ═══════════ */}
         <section ref={heroRef} className="relative min-h-screen flex items-center justify-center overflow-hidden">
           <motion.div className="absolute inset-0 w-full h-[120%] -top-[10%] gpu-accelerated" style={{ y: heroBgY, willChange: "transform" }}>
-            <img src="/gbmain.webp" alt="Mahesh & Sreeja"
-              className="w-full h-full object-cover object-left md:object-center"
-              decoding="async"
-            />
+            <picture className="w-full h-full block">
+              <source media="(max-width: 767px)" srcSet="/mobile.webp" type="image/webp" />
+              <source media="(max-width: 767px)" srcSet="/mobile.jpg" type="image/jpeg" />
+              <source media="(min-width: 768px)" srcSet="/gbmain.webp" type="image/webp" />
+              <img src="/gbmain.webp" alt="Mahesh & Sreeja"
+                className="w-full h-full object-cover object-center"
+                decoding="async"
+              />
+            </picture>
             <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-[#fdfbf7]" />
           </motion.div>
 
