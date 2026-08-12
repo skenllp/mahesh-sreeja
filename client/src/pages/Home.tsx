@@ -921,7 +921,7 @@ export default function Home() {
             {[
               { icon: <Calendar className="w-8 h-8 text-[#6B7D3A]" />, title: "Date", body: "6 September 2026 · Sunday" },
               { icon: <Sparkles className="w-8 h-8 text-[#D4AF37]" />, title: "Muhurtham", body: "12:00 PM – 12:30 PM" },
-              { icon: <Flower2 className="w-8 h-8 text-[#6B7D3A]" />, title: "Venue", body: "Snehanjali Community Hall" },
+              { icon: <Flower2 className="w-8 h-8 text-[#6B7D3A]" />, title: "Venue", body: "Snehanjali Auditorium " },
             ].map((item, i) => (
               <EventCard key={item.title} {...item} theme="ceremony" index={i} />
             ))}
@@ -939,7 +939,7 @@ export default function Home() {
                       </div>
                       <div>
                         <span className="text-xs tracking-widest uppercase text-[#6B7D3A] font-semibold">Ceremony Location</span>
-                        <h3 className="text-2xl font-serif text-[#4F5D2A]">Snehanjali Community Hall</h3>
+                        <h3 className="text-2xl font-serif text-[#4F5D2A]">Snehanjali Auditorium </h3>
                       </div>
                     </div>
                     <a
@@ -953,7 +953,7 @@ export default function Home() {
                   </div>
 
                   <InteractiveMap
-                    title="Snehanjali Community Hall Map"
+                    title="Snehanjali Auditorium  Map"
                     src="https://maps.google.com/maps?q=11.2445178,75.7848762&hl=en&z=16&output=embed"
                   />
 
