@@ -926,6 +926,50 @@ export default function Home() {
               <EventCard key={item.title} {...item} theme="ceremony" index={i} />
             ))}
           </div>
+
+          {/* Ceremony Venue Map */}
+          <div className="relative z-10 mx-auto mt-10 max-w-4xl">
+            <FadeSection>
+              <TiltCard className="h-full">
+                <div className="flex flex-col justify-between bg-white/80 backdrop-blur-md border border-[#D4AF37]/30 rounded-3xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-3 rounded-2xl bg-[#6B7D3A]/10 text-[#6B7D3A]">
+                        <MapPin className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <span className="text-xs tracking-widest uppercase text-[#6B7D3A] font-semibold">Ceremony Location</span>
+                        <h3 className="text-2xl font-serif text-[#4F5D2A]">Snehanjali Community Hall</h3>
+                      </div>
+                    </div>
+                    <a
+                      href="https://maps.app.goo.gl/JazSFML6vDWN5WSt6"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hidden sm:inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#6B7D3A] text-white font-medium text-xs tracking-widest uppercase shadow-md hover:bg-[#5a6a31] transition-all duration-300"
+                    >
+                      <MapPin className="w-4 h-4" /> Open Maps
+                    </a>
+                  </div>
+
+                  <InteractiveMap
+                    title="Snehanjali Community Hall Map"
+                    src="https://maps.google.com/maps?q=11.2445178,75.7848762&hl=en&z=16&output=embed"
+                  />
+
+                  <a
+                    href="https://maps.app.goo.gl/JazSFML6vDWN5WSt6"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="sm:hidden w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-[#6B7D3A] text-white font-medium text-xs tracking-widest uppercase shadow-md hover:bg-[#5a6a31] transition-all duration-300 mt-2"
+                  >
+                    <MapPin className="w-4 h-4" /> Open in Google Maps
+                  </a>
+                </div>
+              </TiltCard>
+            </FadeSection>
+          </div>
+
           <SectionArrow nextId="reception" />
         </section>
 
@@ -945,89 +989,42 @@ export default function Home() {
               <EventCard key={item.title} {...item} theme="reception" index={i} />
             ))}
           </div>
-          
-          <SectionArrow nextId="venues" />
-        </section>
 
-        {/* ═══════════ VENUES & LOCATIONS ═══════════ */}
-        <section id="venues" className="relative overflow-hidden py-24 px-4 bg-gradient-to-b from-[#fdfbf7] to-[#f6f1e8]">
-          <AmbientGlow colors="radial-gradient(circle, rgba(212,175,55,0.15) 0%, transparent 70%)" />
-          <FadeSection className="relative z-10 text-center">
-            <SectionTitle accent="gold">Venues &amp; Locations</SectionTitle>
-            <Ornament />
-            <p className="text-center text-[#7A7266] max-w-xl mx-auto mt-2 mb-12">
-              Find your way to celebrate with us. Explore the interactive maps below for directions to our wedding venues.
-            </p>
-          </FadeSection>
-
-          <div className="relative z-10 mx-auto max-w-5xl grid md:grid-cols-2 gap-10">
-            {/* Ceremony Venue Card */}
+          {/* Reception Venue Map */}
+          <div className="relative z-10 mx-auto mt-10 max-w-4xl">
             <FadeSection>
               <TiltCard className="h-full">
-                <div className="h-full flex flex-col justify-between bg-white/80 backdrop-blur-md border border-[#D4AF37]/30 rounded-3xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300">
-                  <div>
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="p-3 rounded-2xl bg-[#6B7D3A]/10 text-[#6B7D3A]">
-                        <MapPin className="w-6 h-6" />
-                      </div>
-                      <div>
-                        <span className="text-xs tracking-widest uppercase text-[#6B7D3A] font-semibold">Wedding Ceremony</span>
-                        <h3 className="text-2xl font-serif text-[#4F5D2A]">Snehanjali Community Hall</h3>
-                      </div>
-                    </div>
-                    <p className="text-sm text-[#7A7266] mb-4">
-                      Join us for the sacred Muhurtham on Sunday, 6th September 2026.
-                    </p>
-                    
-                    {/* Embedded Map iframe */}
-                    <InteractiveMap
-                      title="Snehanjali Community Hall Map"
-                      src="https://maps.google.com/maps?q=11.2445178,75.7848762&hl=en&z=16&output=embed"
-                    />
-                  </div>
-
-                  <a
-                    href="https://maps.app.goo.gl/JazSFML6vDWN5WSt6"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-[#6B7D3A] text-white font-medium text-xs tracking-widest uppercase shadow-md hover:bg-[#5a6a31] hover:shadow-lg transition-all duration-300"
-                  >
-                    <MapPin className="w-4 h-4" /> Open in Google Maps
-                  </a>
-                </div>
-              </TiltCard>
-            </FadeSection>
-
-            {/* Reception Venue Card */}
-            <FadeSection>
-              <TiltCard className="h-full">
-                <div className="h-full flex flex-col justify-between bg-white/80 backdrop-blur-md border border-[#D4AF37]/30 rounded-3xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300">
-                  <div>
-                    <div className="flex items-center gap-3 mb-4">
+                <div className="flex flex-col justify-between bg-white/80 backdrop-blur-md border border-[#D4AF37]/30 rounded-3xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
                       <div className="p-3 rounded-2xl bg-[#c4717a]/10 text-[#c4717a]">
                         <Flower2 className="w-6 h-6" />
                       </div>
                       <div>
-                        <span className="text-xs tracking-widest uppercase text-[#c4717a] font-semibold">Grand Reception</span>
+                        <span className="text-xs tracking-widest uppercase text-[#c4717a] font-semibold">Reception Location</span>
                         <h3 className="text-2xl font-serif text-[#4F5D2A]">Sunflower Auditorium</h3>
                       </div>
                     </div>
-                    <p className="text-sm text-[#7A7266] mb-4">
-                      Celebrate our wedding reception on Tuesday, 8th September 2026 at Kasaragod.
-                    </p>
-                    
-                    {/* Embedded Map iframe */}
-                    <InteractiveMap
-                      title="Sunflower Auditorium Map"
-                      src="https://maps.google.com/maps?q=12.6399441,75.094243&hl=en&z=16&output=embed"
-                    />
+                    <a
+                      href="https://maps.app.goo.gl/om6VVoSppooeMEvB7"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hidden sm:inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#D4AF37] text-white font-medium text-xs tracking-widest uppercase shadow-md hover:bg-[#c29f2d] transition-all duration-300"
+                    >
+                      <Flower2 className="w-4 h-4" /> Open Maps
+                    </a>
                   </div>
+
+                  <InteractiveMap
+                    title="Sunflower Auditorium Map"
+                    src="https://maps.google.com/maps?q=12.6399441,75.094243&hl=en&z=16&output=embed"
+                  />
 
                   <a
                     href="https://maps.app.goo.gl/om6VVoSppooeMEvB7"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-[#D4AF37] text-white font-medium text-xs tracking-widest uppercase shadow-md hover:bg-[#c29f2d] hover:shadow-lg transition-all duration-300"
+                    className="sm:hidden w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-[#D4AF37] text-white font-medium text-xs tracking-widest uppercase shadow-md hover:bg-[#c29f2d] transition-all duration-300 mt-2"
                   >
                     <Flower2 className="w-4 h-4" /> Open in Google Maps
                   </a>
@@ -1035,6 +1032,7 @@ export default function Home() {
               </TiltCard>
             </FadeSection>
           </div>
+
           <SectionArrow nextId="photos" />
         </section>
 
