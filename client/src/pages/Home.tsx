@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, useScroll, useTransform, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
+import { Sparkles, Heart, Calendar, Clock, Flower2, MapPin, Music, Gem, Star, Sun } from "lucide-react";
 
 /* ═══════════════════════════════════════════════════
    ALL IMAGES that need to be loaded before reveal
 ═══════════════════════════════════════════════════ */
 const PRELOAD_IMAGES = [
-  "/gbmain.jpg", "/groom.jpg", "/bride.jpg", "/bride2.jpg",
-  "/ringexchange.jpg", "/gb.jpg", "/gb2.jpg",
+  "/gbmain.webp", "/groom.webp", "/bride.webp", "/bride2.webp",
+  "/ringexchange.webp", "/gb.webp", "/gb2.webp",
 ];
 
 /* ═══════════════════════════════════════════════════
@@ -69,11 +70,11 @@ function PhotoLoader({ onComplete }: { onComplete: () => void }) {
       ))}
 
       <motion.div
-        className="text-5xl mb-8"
+        className="mb-8 text-[#D4AF37] flex items-center justify-center"
         animate={{ rotate: [0, 15, -15, 0], scale: [1, 1.15, 1] }}
         transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
       >
-        💍
+        <Sparkles className="w-12 h-12 stroke-[1.5]" />
       </motion.div>
 
       {/* Circular progress ring */}
@@ -110,38 +111,35 @@ function PhotoLoader({ onComplete }: { onComplete: () => void }) {
 }
 
 /* ═══════════════════════════════════════════════════
-   RIPPLE – touch/click effect on any element
+   RIPPLE – click effect on any element
 ═══════════════════════════════════════════════════ */
 function useRipple() {
   const [ripples, setRipples] = useState<{ x: number; y: number; id: number }[]>([]);
-  const trigger = useCallback((e: React.MouseEvent | React.TouchEvent, el: HTMLElement) => {
+  const trigger = useCallback((e: React.MouseEvent, el: HTMLElement) => {
     const rect = el.getBoundingClientRect();
-    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
-    const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
     const id = Date.now();
-    setRipples((r) => [...r, { x: clientX - rect.left, y: clientY - rect.top, id }]);
-    setTimeout(() => setRipples((r) => r.filter((rp) => rp.id !== id)), 700);
+    setRipples((r) => [...r.slice(-3), { x: e.clientX - rect.left, y: e.clientY - rect.top, id }]);
+    setTimeout(() => setRipples((r) => r.filter((rp) => rp.id !== id)), 600);
   }, []);
   return { ripples, trigger };
 }
 
 /* ═══════════════════════════════════════════════════
-   TILT CARD – 3D tilt on hover / touch
+   TILT CARD – 3D tilt on mouse hover (touch bypass)
 ═══════════════════════════════════════════════════ */
 function TiltCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const rotateX = useSpring(useMotionValue(0), { stiffness: 200, damping: 25 });
   const rotateY = useSpring(useMotionValue(0), { stiffness: 200, damping: 25 });
 
-  const handleMove = (e: React.MouseEvent | React.TouchEvent) => {
+  const handleMove = (e: React.PointerEvent) => {
+    if (e.pointerType === "touch") return; // Touch scrolling stays 100% smooth
     if (!ref.current) return;
     const rect = ref.current.getBoundingClientRect();
-    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
-    const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
-    const x = (clientX - rect.left) / rect.width - 0.5;
-    const y = (clientY - rect.top) / rect.height - 0.5;
-    rotateY.set(x * 14);
-    rotateX.set(-y * 14);
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    rotateY.set(x * 12);
+    rotateX.set(-y * 12);
   };
 
   const handleLeave = () => { rotateX.set(0); rotateY.set(0); };
@@ -149,12 +147,10 @@ function TiltCard({ children, className = "" }: { children: React.ReactNode; cla
   return (
     <motion.div
       ref={ref}
-      className={className}
+      className={`${className} gpu-accelerated`}
       style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
-      onMouseMove={handleMove}
-      onMouseLeave={handleLeave}
-      onTouchMove={handleMove}
-      onTouchEnd={handleLeave}
+      onPointerMove={handleMove}
+      onPointerLeave={handleLeave}
     >
       {children}
     </motion.div>
@@ -162,37 +158,73 @@ function TiltCard({ children, className = "" }: { children: React.ReactNode; cla
 }
 
 /* ═══════════════════════════════════════════════════
-   FALLING PETAL
+   FALLING PETAL – GPU accelerated CSS keyframe
 ═══════════════════════════════════════════════════ */
-function Petal({ delay }: { delay: number }) {
-  const left = Math.random() * 100;
-  const size = 8 + Math.random() * 14;
-  const dur = 4 + Math.random() * 4;
+function Petal({ delay, index = 0 }: { delay: number; index?: number }) {
+  const left = (index * 17 + 5) % 95;
+  const size = 10 + (index % 3) * 4;
+  const dur = 4.5 + (index % 4) * 0.8;
   return (
-    <motion.div className="absolute top-0 pointer-events-none"
-      style={{ left: `${left}%`, width: size, height: size }}
-      initial={{ y: -20, opacity: 1, rotate: 0 }}
-      animate={{ y: "110vh", opacity: [1, 1, 0], rotate: 360 }}
-      transition={{ duration: dur, delay, ease: "linear", repeat: Infinity, repeatDelay: Math.random() * 6 }}
+    <div
+      className="absolute top-0 pointer-events-none animate-petal gpu-accelerated"
+      style={{
+        left: `${left}%`,
+        width: size,
+        height: size,
+        animationDuration: `${dur}s`,
+        animationDelay: `${delay}s`,
+      }}
     >
       <svg viewBox="0 0 24 24" fill="none">
         <ellipse cx="12" cy="12" rx="6" ry="11" fill="#D4AF37" fillOpacity="0.55" transform="rotate(30 12 12)" />
       </svg>
-    </motion.div>
+    </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════
-   FLOATING HEART
+   FLOATING HEART – GPU accelerated CSS keyframe
 ═══════════════════════════════════════════════════ */
 function FloatingHeart({ delay, x }: { delay: number; x: string }) {
   return (
-    <motion.div className="absolute bottom-0 text-rose-400/40 text-2xl pointer-events-none select-none"
-      style={{ left: x }}
-      initial={{ y: 0, opacity: 0 }}
-      animate={{ y: -300, opacity: [0, 0.7, 0] }}
-      transition={{ duration: 6, delay, ease: "easeOut", repeat: Infinity, repeatDelay: 3 }}
-    >♥</motion.div>
+    <div
+      className="absolute bottom-0 text-rose-400/40 pointer-events-none select-none flex items-center justify-center animate-heart gpu-accelerated"
+      style={{ left: x, animationDuration: "6s", animationDelay: `${delay}s` }}
+    >
+      <Heart className="w-5 h-5 fill-current" />
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   INTERACTIVE MAP – Prevents touch scroll locks
+═══════════════════════════════════════════════════ */
+function InteractiveMap({ title, src }: { title: string; src: string }) {
+  const [active, setActive] = useState(false);
+
+  return (
+    <div className="w-full h-64 rounded-2xl overflow-hidden shadow-inner border border-[#D4AF37]/20 relative bg-[#f7f3ec] mb-6 group">
+      <iframe
+        title={title}
+        src={src}
+        className={`w-full h-full border-0 transition-opacity duration-300 ${active ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-90"}`}
+        allowFullScreen={false}
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+      />
+      {!active && (
+        <button
+          onClick={() => setActive(true)}
+          type="button"
+          className="absolute inset-0 bg-black/10 backdrop-blur-[2px] flex items-center justify-center cursor-pointer transition-colors duration-300 hover:bg-black/25 group-hover:opacity-100"
+          aria-label={`Tap to interact with ${title}`}
+        >
+          <span className="px-4 py-2 rounded-full bg-white/95 shadow-md text-xs font-semibold text-[#4F5D2A] uppercase tracking-wider flex items-center gap-2 border border-[#D4AF37]/40 transform transition-transform duration-300 group-hover:scale-105">
+            <MapPin className="w-4 h-4 text-[#D4AF37]" /> Tap to interact with map
+          </span>
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -203,10 +235,10 @@ function FadeSection({ children, className = "", style }: {
   children: React.ReactNode; className?: string; style?: React.CSSProperties;
 }) {
   return (
-    <motion.div className={className} style={style}
-      initial={{ opacity: 0, y: 48 }} whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+    <motion.div className={`${className} gpu-accelerated`} style={style}
+      initial={{ opacity: 0, y: 36 }} whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
     >{children}</motion.div>
   );
 }
@@ -235,18 +267,19 @@ function GalleryCell({ src, label, objectPosition = "center" }: { src: string; l
 
   return (
     <motion.div ref={ref}
-      className="relative w-full h-full overflow-hidden rounded-2xl shadow-xl group cursor-pointer"
+      className="relative w-full h-full overflow-hidden rounded-2xl shadow-xl group cursor-pointer gpu-accelerated"
       whileHover={{ scale: 1.02, boxShadow: "0 25px 60px rgba(107,125,58,0.25)" }}
       whileTap={{ scale: 0.98 }}
       transition={{ duration: 0.35 }}
       onClick={(e) => trigger(e, ref.current!)}
-      onTouchStart={(e) => trigger(e, ref.current!)}
     >
       <motion.img src={src} alt={label}
         className="w-full h-full object-cover"
         style={{ objectPosition }}
-        whileHover={{ scale: 1.07 }}
-        transition={{ duration: 0.5 }}
+        loading="lazy"
+        decoding="async"
+        whileHover={{ scale: 1.05 }}
+        transition={{ duration: 0.4 }}
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       <div className="absolute bottom-4 left-0 right-0 text-center text-white text-sm font-medium tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -259,7 +292,7 @@ function GalleryCell({ src, label, objectPosition = "center" }: { src: string; l
           style={{ left: r.x - 40, top: r.y - 40, width: 80, height: 80 }}
           initial={{ scale: 0, opacity: 0.6 }}
           animate={{ scale: 4, opacity: 0 }}
-          transition={{ duration: 0.65, ease: "easeOut" }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
         />
       ))}
     </motion.div>
@@ -313,32 +346,31 @@ const eventThemes: Record<EventTheme, { hoverBg: string; hoverBorder: string; ho
   },
 };
 
-function EventCard({ icon, title, body, theme, index }: { icon: string; title: string; body: string; theme: EventTheme; index: number }) {
+function EventCard({ icon, title, body, theme, index }: { icon: React.ReactNode; title: string; body: string; theme: EventTheme; index: number }) {
   const t = eventThemes[theme];
   const ref = useRef<HTMLDivElement>(null);
   const { ripples, trigger } = useRipple();
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 44 }}
+      initial={{ opacity: 0, y: 36 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.75, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.65, delay: index * 0.08, ease: [0.22, 1, 0.36, 1] }}
       className="h-full"
     >
       <motion.div ref={ref}
-        className="group relative h-full overflow-hidden rounded-2xl border border-[#D4AF37]/25 bg-white/70 p-8 text-center shadow-md backdrop-blur-sm cursor-pointer"
-        whileHover={{ y: -10, scale: 1.03, borderColor: t.hoverBorder, boxShadow: t.hoverShadow }}
-        whileTap={{ scale: 0.97 }}
-        transition={{ type: "spring", stiffness: 280, damping: 18 }}
+        className="group relative h-full overflow-hidden rounded-2xl border border-[#D4AF37]/25 bg-white/70 p-8 text-center shadow-md backdrop-blur-sm cursor-pointer gpu-accelerated"
+        whileHover={{ y: -6, scale: 1.02, borderColor: t.hoverBorder, boxShadow: t.hoverShadow }}
+        whileTap={{ scale: 0.98 }}
+        transition={{ type: "spring", stiffness: 280, damping: 20 }}
         onClick={(e) => trigger(e, ref.current!)}
-        onTouchStart={(e) => trigger(e, ref.current!)}
       >
         <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100" style={{ background: t.hoverBg }} />
-        <motion.span className="relative z-10 mb-3 inline-block text-4xl"
-          whileHover={{ scale: 1.2, rotate: [-6, 6, 0] }}
-          whileTap={{ scale: 1.3 }}
-          transition={{ duration: 0.4 }}
+        <motion.span className="relative z-10 mb-3 inline-flex items-center justify-center"
+          whileHover={{ scale: 1.15, rotate: [-4, 4, 0] }}
+          whileTap={{ scale: 1.2 }}
+          transition={{ duration: 0.3 }}
         >{icon}</motion.span>
         <h3 className="relative z-10 mb-2 font-serif text-2xl text-[#4F5D2A]">{title}</h3>
         <p className="relative z-10 text-sm leading-relaxed text-[#7A7266]">{body}</p>
@@ -349,7 +381,7 @@ function EventCard({ icon, title, body, theme, index }: { icon: string; title: s
             style={{ left: r.x - 40, top: r.y - 40, width: 80, height: 80 }}
             initial={{ scale: 0, opacity: 0.7 }}
             animate={{ scale: 4, opacity: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
+            transition={{ duration: 0.55, ease: "easeOut" }}
           />
         ))}
       </motion.div>
@@ -358,18 +390,17 @@ function EventCard({ icon, title, body, theme, index }: { icon: string; title: s
 }
 
 /* ═══════════════════════════════════════════════════
-   AMBIENT GLOW BLOB
+   AMBIENT GLOW BLOB – GPU accelerated CSS keyframe
 ═══════════════════════════════════════════════════ */
 function AmbientGlow({ colors }: { colors: string }) {
   return (
-    <motion.div
-      className="pointer-events-none absolute left-1/2 top-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl"
+    <div
+      className="pointer-events-none absolute left-1/2 top-1/2 h-[500px] w-[500px] rounded-full blur-3xl animate-ambient gpu-accelerated"
       style={{ background: colors }}
-      animate={{ scale: [1, 1.12, 1], opacity: [0.25, 0.45, 0.25] }}
-      transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
     />
   );
 }
+
 
 /* ═══════════════════════════════════════════════════
    COUNT BOX
@@ -599,13 +630,15 @@ export default function Home() {
             exit={{ opacity: 0, scale: 1.04 }}
             transition={{ duration: 0.9, ease: "easeInOut" }}
           >
-            {petals.map((i) => <Petal key={i} delay={i * 0.3} />)}
+            {petals.map((i) => <Petal key={i} delay={i * 0.3} index={i} />)}
             {hearts.map((x, i) => <FloatingHeart key={i} delay={i * 0.8} x={x} />)}
             <div className="text-center px-6 relative z-10">
-              <motion.div className="text-5xl mb-6"
+              <motion.div className="mb-6 flex justify-center text-[#D4AF37]"
                 initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.6, type: "spring", stiffness: 120 }}
-              >💍</motion.div>
+              >
+                <Sparkles className="w-12 h-12 stroke-[1.5]" />
+              </motion.div>
               <h1 className="text-3xl md:text-5xl font-serif text-[#4F5D2A] min-h-[60px] leading-tight">
                 {displayedText}
                 <motion.span animate={{ opacity: [1, 0] }} transition={{ duration: 0.6, repeat: Infinity }}
@@ -623,7 +656,7 @@ export default function Home() {
                   animate={{ opacity: [0.5, 1, 0.5] }}
                   transition={{ duration: 1.5, repeat: Infinity }}
                 >
-                  <span>🎵</span><span>Tap to start music</span>
+                  <Music className="w-4 h-4 text-[#b89a63]" /><span>Tap to start music</span>
                 </motion.div>
               )}
             </div>
@@ -636,9 +669,10 @@ export default function Home() {
 
         {/* ═══════════ HERO ═══════════ */}
         <section ref={heroRef} className="relative min-h-screen flex items-center justify-center overflow-hidden">
-          <motion.div className="absolute inset-0 w-full h-[120%] -top-[10%]" style={{ y: heroBgY }}>
-            <img src="/gbmain.jpg" alt="Mahesh & Sreeja"
+          <motion.div className="absolute inset-0 w-full h-[120%] -top-[10%] gpu-accelerated" style={{ y: heroBgY, willChange: "transform" }}>
+            <img src="/gbmain.webp" alt="Mahesh & Sreeja"
               className="w-full h-full object-cover object-left md:object-center"
+              decoding="async"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-[#fdfbf7]" />
           </motion.div>
@@ -686,10 +720,12 @@ export default function Home() {
                 />
               ))}
               <span className="relative z-10">View Invitation</span>
-              <motion.span className="relative z-10 text-lg"
+              <motion.span className="relative z-10 flex items-center"
                 animate={{ rotate: [0, 20, -20, 0], scale: [1, 1.25, 1] }}
                 transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              >💍</motion.span>
+              >
+                <Sparkles className="w-5 h-5 text-white" />
+              </motion.span>
             </motion.button>
           </motion.div>
 
@@ -707,8 +743,15 @@ export default function Home() {
         {/* ═══════════ COUNTDOWN ═══════════ */}
         <section id="countdown" className="py-20 px-4 bg-gradient-to-b from-[#fdfbf7] to-[#f6f1e8]">
           <FadeSection className="max-w-3xl mx-auto text-center">
-            <p className="text-sm tracking-[0.3em] uppercase text-[#7A7266] mb-8">
-              {countdown.arrived ? "The wedding day has arrived 💍" : "Counting down to forever"}
+            <p className="text-sm tracking-[0.3em] uppercase text-[#7A7266] mb-8 inline-flex items-center gap-2 justify-center">
+              {countdown.arrived ? (
+                <>
+                  <span>The wedding day has arrived</span>
+                  <Sparkles className="w-5 h-5 text-[#D4AF37]" />
+                </>
+              ) : (
+                "Counting down to forever"
+              )}
             </p>
             {!countdown.arrived && (
               <div className="flex items-start justify-center gap-4 md:gap-8">
@@ -802,8 +845,8 @@ export default function Home() {
           </FadeSection>
           <div className="max-w-5xl mx-auto mt-14 grid md:grid-cols-2 gap-10">
             {[
-              { src: "/groom.jpg", role: "Groom", name: "Mahesh", parents: "S/o Mrs. Koragappan & Late Mrs. Sarojini · Swarga House, Kasaragod" },
-              { src: "/bride.jpg", role: "Bride", name: "Sreeja", parents: "D/o Mr. Raju & Mrs. Shantha · Puthiyara, Kozhikode" },
+              { src: "/groom.webp", role: "Groom", name: "Mahesh", parents: "S/o Mrs. Koragappan & Late Mrs. Sarojini · Swarga House, Kasaragod" },
+              { src: "/bride.webp", role: "Bride", name: "Sreeja", parents: "D/o Mr. Raju & Mrs. Shantha · Puthiyara, Kozhikode" },
             ].map((person) => (
               <FadeSection key={person.role}>
                 <motion.div
@@ -815,7 +858,9 @@ export default function Home() {
                   <div className="aspect-[3/4] overflow-hidden">
                     <motion.img src={person.src} alt={person.name}
                       className="w-full h-full object-cover"
-                      whileHover={{ scale: 1.07 }} transition={{ duration: 0.5 }}
+                      loading="lazy"
+                      decoding="async"
+                      whileHover={{ scale: 1.05 }} transition={{ duration: 0.4 }}
                     />
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
@@ -835,16 +880,19 @@ export default function Home() {
         {/* ═══════════ RING EXCHANGE ═══════════ */}
         <section id="ringexchange" className="relative py-0 overflow-hidden">
           <div className="relative h-[70vh] md:h-[80vh]">
-            <motion.img src="/ringexchange.jpg" alt="Ring Exchange"
-              className="w-full h-full object-cover"
-              whileHover={{ scale: 1.04 }} transition={{ duration: 5, ease: "easeOut" }}
+            <img src="/ringexchange.webp" alt="Ring Exchange"
+              className="w-full h-full object-cover gpu-accelerated"
+              loading="lazy"
+              decoding="async"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent" />
             <FadeSection className="absolute inset-0 flex items-center px-10 md:px-20">
               <div className="max-w-lg">
-                <motion.div className="text-[#D4AF37] text-5xl mb-4"
+                <motion.div className="text-[#D4AF37] mb-4 flex items-center justify-start"
                   animate={{ rotate: [0, 10, -10, 0] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                >💍</motion.div>
+                >
+                  <Sparkles className="w-12 h-12 stroke-[1.5]" />
+                </motion.div>
                 <h2 className="text-5xl md:text-6xl font-serif text-white mb-4 leading-tight">The Ring Exchange</h2>
                 <p className="text-white/75 text-lg leading-relaxed">
                   The moment two souls promise each other a lifetime — sealed with a ring, blessed by the Almighty.
@@ -864,10 +912,11 @@ export default function Home() {
             <SectionTitle accent="ceremony">Wedding Ceremony</SectionTitle>
             <Ornament />
           </FadeSection>
-          <div className="relative z-10 mx-auto mt-12 grid max-w-4xl gap-6 md:grid-cols-2">
+          <div className="relative z-10 mx-auto mt-12 grid max-w-4xl gap-6 md:grid-cols-3">
             {[
-              { icon: "📅", title: "Date", body: "6 September 2026 · Sunday" },
-              { icon: "✨", title: "Muhurtham", body: "12:00 PM – 12:30 PM" },
+              { icon: <Calendar className="w-8 h-8 text-[#6B7D3A]" />, title: "Date", body: "6 September 2026 · Sunday" },
+              { icon: <Sparkles className="w-8 h-8 text-[#D4AF37]" />, title: "Muhurtham", body: "12:00 PM – 12:30 PM" },
+              { icon: <Flower2 className="w-8 h-8 text-[#6B7D3A]" />, title: "Venue", body: "Snehanjali Community Hall" },
             ].map((item, i) => (
               <EventCard key={item.title} {...item} theme="ceremony" index={i} />
             ))}
@@ -884,32 +933,103 @@ export default function Home() {
           </FadeSection>
           <div className="relative z-10 mx-auto mt-12 grid max-w-4xl gap-6 md:grid-cols-3">
             {[
-              { icon: "📅", title: "Date", body: "8 September 2026 · Tuesday" },
-              { icon: "🕛", title: "Time", body: "12:00 PM – 6:00 PM" },
-              { icon: "🌻", title: "Venue", body: "Sunflower Auditorium, Kasaragod" },
+              { icon: <Calendar className="w-8 h-8 text-[#c4717a]" />, title: "Date", body: "8 September 2026 · Tuesday" },
+              { icon: <Clock className="w-8 h-8 text-[#D4AF37]" />, title: "Time", body: "12:00 PM – 6:00 PM" },
+              { icon: <Flower2 className="w-8 h-8 text-[#D4AF37]" />, title: "Venue", body: "Sunflower Auditorium, Kasaragod" },
             ].map((item, i) => (
               <EventCard key={item.title} {...item} theme="reception" index={i} />
             ))}
           </div>
-          {/* Google Maps directions */}
-          <FadeSection className="relative z-10 mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <a
-              href="https://share.google/l6urq59gGVbp6HMg3"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-8 py-3 rounded-full border border-[#D4AF37]/60 bg-white/70 backdrop-blur-sm text-[#4F5D2A] text-sm font-medium tracking-widest uppercase shadow-md hover:bg-[#D4AF37] hover:text-white transition-all duration-300"
-            >
-              <span>📍</span> Reception Venue Map
-            </a>
-            <a
-              href="https://share.google/BjvN1cYLAvvqWjfC6"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-8 py-3 rounded-full border border-[#D4AF37]/60 bg-white/70 backdrop-blur-sm text-[#4F5D2A] text-sm font-medium tracking-widest uppercase shadow-md hover:bg-[#D4AF37] hover:text-white transition-all duration-300"
-            >
-              <span>🌻</span> Sunflower Auditorium
-            </a>
+          
+          <SectionArrow nextId="venues" />
+        </section>
+
+        {/* ═══════════ VENUES & LOCATIONS ═══════════ */}
+        <section id="venues" className="relative overflow-hidden py-24 px-4 bg-gradient-to-b from-[#fdfbf7] to-[#f6f1e8]">
+          <AmbientGlow colors="radial-gradient(circle, rgba(212,175,55,0.15) 0%, transparent 70%)" />
+          <FadeSection className="relative z-10 text-center">
+            <SectionTitle accent="gold">Venues &amp; Locations</SectionTitle>
+            <Ornament />
+            <p className="text-center text-[#7A7266] max-w-xl mx-auto mt-2 mb-12">
+              Find your way to celebrate with us. Explore the interactive maps below for directions to our wedding venues.
+            </p>
           </FadeSection>
+
+          <div className="relative z-10 mx-auto max-w-5xl grid md:grid-cols-2 gap-10">
+            {/* Ceremony Venue Card */}
+            <FadeSection>
+              <TiltCard className="h-full">
+                <div className="h-full flex flex-col justify-between bg-white/80 backdrop-blur-md border border-[#D4AF37]/30 rounded-3xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300">
+                  <div>
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-3 rounded-2xl bg-[#6B7D3A]/10 text-[#6B7D3A]">
+                        <MapPin className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <span className="text-xs tracking-widest uppercase text-[#6B7D3A] font-semibold">Wedding Ceremony</span>
+                        <h3 className="text-2xl font-serif text-[#4F5D2A]">Snehanjali Community Hall</h3>
+                      </div>
+                    </div>
+                    <p className="text-sm text-[#7A7266] mb-4">
+                      Join us for the sacred Muhurtham on Sunday, 6th September 2026.
+                    </p>
+                    
+                    {/* Embedded Map iframe */}
+                    <InteractiveMap
+                      title="Snehanjali Community Hall Map"
+                      src="https://maps.google.com/maps?q=11.2445178,75.7848762&hl=en&z=16&output=embed"
+                    />
+                  </div>
+
+                  <a
+                    href="https://maps.app.goo.gl/JazSFML6vDWN5WSt6"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-[#6B7D3A] text-white font-medium text-xs tracking-widest uppercase shadow-md hover:bg-[#5a6a31] hover:shadow-lg transition-all duration-300"
+                  >
+                    <MapPin className="w-4 h-4" /> Open in Google Maps
+                  </a>
+                </div>
+              </TiltCard>
+            </FadeSection>
+
+            {/* Reception Venue Card */}
+            <FadeSection>
+              <TiltCard className="h-full">
+                <div className="h-full flex flex-col justify-between bg-white/80 backdrop-blur-md border border-[#D4AF37]/30 rounded-3xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300">
+                  <div>
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="p-3 rounded-2xl bg-[#c4717a]/10 text-[#c4717a]">
+                        <Flower2 className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <span className="text-xs tracking-widest uppercase text-[#c4717a] font-semibold">Grand Reception</span>
+                        <h3 className="text-2xl font-serif text-[#4F5D2A]">Sunflower Auditorium</h3>
+                      </div>
+                    </div>
+                    <p className="text-sm text-[#7A7266] mb-4">
+                      Celebrate our wedding reception on Tuesday, 8th September 2026 at Kasaragod.
+                    </p>
+                    
+                    {/* Embedded Map iframe */}
+                    <InteractiveMap
+                      title="Sunflower Auditorium Map"
+                      src="https://maps.google.com/maps?q=12.6399441,75.094243&hl=en&z=16&output=embed"
+                    />
+                  </div>
+
+                  <a
+                    href="https://maps.app.goo.gl/om6VVoSppooeMEvB7"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-[#D4AF37] text-white font-medium text-xs tracking-widest uppercase shadow-md hover:bg-[#c29f2d] hover:shadow-lg transition-all duration-300"
+                  >
+                    <Flower2 className="w-4 h-4" /> Open in Google Maps
+                  </a>
+                </div>
+              </TiltCard>
+            </FadeSection>
+          </div>
           <SectionArrow nextId="photos" />
         </section>
 
@@ -927,19 +1047,19 @@ export default function Home() {
             gridTemplateAreas: `"main groom groom" "main bride bride" "ring gb gb"`,
           }}>
             <FadeSection style={{ gridArea: "main" }} className="h-full">
-              <GalleryCell src="/gbmain.jpg" label="Together Forever" />
+              <GalleryCell src="/gbmain.webp" label="Together Forever" />
             </FadeSection>
             <FadeSection style={{ gridArea: "groom" }} className="h-full">
-              <GalleryCell src="/groom.jpg" label="Mahesh" />
+              <GalleryCell src="/groom.webp" label="Mahesh" />
             </FadeSection>
             <FadeSection style={{ gridArea: "bride" }} className="h-full">
-              <GalleryCell src="/bride2.jpg" label="Sreeja" />
+              <GalleryCell src="/bride2.webp" label="Sreeja" />
             </FadeSection>
             <FadeSection style={{ gridArea: "ring" }} className="h-full">
-              <GalleryCell src="/ringexchange.jpg" label="Ring Exchange" />
+              <GalleryCell src="/ringexchange.webp" label="Ring Exchange" />
             </FadeSection>
             <FadeSection style={{ gridArea: "gb" }} className="h-full">
-              <GalleryCell src="/gb2.jpg" label="Mahesh & Sreeja" />
+              <GalleryCell src="/gb2.webp" label="Mahesh & Sreeja" />
             </FadeSection>
           </div>
           <SectionArrow nextId="finalbanner" />
@@ -948,9 +1068,10 @@ export default function Home() {
         {/* ═══════════ FINAL BANNER ═══════════ */}
         <section id="finalbanner" className="relative overflow-hidden">
           <div className="relative h-[60vh]">
-            <motion.img src="/gb.jpg" alt="Mahesh & Sreeja"
-              className="h-full w-full object-cover"
-              whileHover={{ scale: 1.05 }} transition={{ duration: 6, ease: "easeOut" }}
+            <img src="/gb.webp" alt="Mahesh & Sreeja"
+              className="h-full w-full object-cover gpu-accelerated"
+              loading="lazy"
+              decoding="async"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
             <FadeSection className="absolute inset-0 flex flex-col items-center justify-end pb-16 px-6 text-center">
@@ -965,9 +1086,11 @@ export default function Home() {
 
         {/* ═══════════ FOOTER ═══════════ */}
         <footer className="bg-[#fdfbf7] border-t border-[#D4AF37]/20 py-16 px-4 text-center">
-          <motion.div className="text-4xl mb-4"
+          <motion.div className="mb-4 flex justify-center text-[#D4AF37]"
             animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          >💍</motion.div>
+          >
+            <Sparkles className="w-10 h-10 stroke-[1.5]" />
+          </motion.div>
           <p className="text-3xl font-serif text-[#4F5D2A] mb-3">We look forward to your gracious presence</p>
           <Ornament />
           <p className="text-[#7A7266] tracking-widest text-sm uppercase mt-4">
@@ -999,17 +1122,19 @@ export default function Home() {
               const rad = (angle * Math.PI) / 180;
               const tx = Math.cos(rad) * dist;
               const ty = Math.sin(rad) * dist;
-              const emojis = ["💍", "✿", "♥", "✨", "🌸", "⭐"];
-              const emoji = emojis[i % emojis.length];
-              const size = 14 + Math.floor(Math.random() * 14);
+              const iconList = [Sparkles, Flower2, Heart, Star, Gem, Sun];
+              const IconComp = iconList[i % iconList.length];
+              const size = 16 + Math.floor(Math.random() * 12);
               return (
                 <motion.div key={i}
-                  className="absolute select-none"
-                  style={{ left: x, top: y, fontSize: size }}
+                  className="absolute select-none text-[#D4AF37] flex items-center justify-center"
+                  style={{ left: x, top: y, width: size, height: size }}
                   initial={{ x: 0, y: 0, opacity: 1, scale: 0.3 }}
                   animate={{ x: tx, y: ty, opacity: 0, scale: 1.2 }}
                   transition={{ duration: 0.9 + Math.random() * 0.4, ease: "easeOut" }}
-                >{emoji}</motion.div>
+                >
+                  <IconComp className="w-full h-full fill-current stroke-[1.5]" />
+                </motion.div>
               );
             })}
             {/* shockwave ring from button */}
